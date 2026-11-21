@@ -1,0 +1,70 @@
+# Deploys a candidate to the client's koesivusto (GitHub Pages) and verifies it. Started by TRIAC
+# Anvil through workflow_dispatch on the candidate's branch; it finds the run again by the
+# correlation id in the run's name, and shows the client the pictures of the anvil-pictures
+# artifact when she is asked to accept the batch.
+name: Anvil deploy
+run-name: Anvil deploy ${{ inputs.correlation_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      correlation_id:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time: the koesivusto shows one candidate.
+concurrency:
+  group: koesivusto
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      PLAYWRIGHT: playwright@1.65.1
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check
+        run: ./check.sh
+
+      - name: Build the pages
+        run: python3 -B app.py --build site
+
+      - name: Pictures at a phone width and a desktop width
+        shell: bash
+        run: |
+          npx --yes "$PLAYWRIGHT" install --with-deps chromium
+          # The app prints its port once it listens: reading that line is the wait.
+          exec 3< <(python3 -B app.py 0)
+          read -r port <&3
+          mkdir -p shots
+          npx --yes "$PLAYWRIGHT" screenshot --full-page --viewport-size "390, 844" \
+            "http://127.0.0.1:$port/" shots/etusivu-puhelin.png
+          npx --yes "$PLAYWRIGHT" screenshot --full-page --viewport-size "1440, 900" \
+            "http://127.0.0.1:$port/" shots/etusivu-tietokone.png
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: anvil-pictures
+          path: shots/
+          if-no-files-found: error
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Verify the koesivusto serves this commit
+        run: python3 -B verify.py "${{ steps.deployment.outputs.page_url }}" "$GITHUB_SHA"
