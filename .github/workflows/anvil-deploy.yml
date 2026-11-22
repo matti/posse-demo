@@ -1,7 +1,14 @@
-# Deploys a candidate to the client's koesivusto (GitHub Pages) and verifies it. Started by TRIAC
-# Anvil through workflow_dispatch on the candidate's branch; it finds the run again by the
-# correlation id in the run's name, and shows the client the pictures of the anvil-pictures
-# artifact when she is asked to accept the batch.
+# Deploys a candidate to one of the koesivusto's directories (GitHub Pages) and verifies it.
+# Started by TRIAC Anvil through workflow_dispatch on the candidate's branch; it finds the run
+# again by the correlation id in the run's name, and shows the client the pictures of the
+# anvil-pictures artifact when she is asked to accept the batch.
+#
+# One Pages site holds three directories, one per environment of Anvil's pipeline: `testaaja`
+# and `toinen` (each client contact's own) and `yla` (the upstream). A dispatch deploys one of
+# them, named by the input `site` (`matti.github.io/posse-demo/<directory>`, as Anvil fills it),
+# and leaves the other two as they are: every directory is kept on the branch `gh-pages`, the run
+# replaces only its own there, and the whole branch is published as the Pages artifact. Pages
+# stays on "GitHub Actions" as its source.
 name: Anvil deploy
 run-name: Anvil deploy ${{ inputs.correlation_id }}
 
@@ -11,13 +18,17 @@ on:
       correlation_id:
         required: true
         type: string
+      site:
+        description: "matti.github.io/posse-demo/<testaaja|toinen|yla>"
+        required: true
+        type: string
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
-# One deploy at a time: the koesivusto shows one candidate.
+# One deploy at a time: the branch gh-pages and the Pages site are shared by every directory.
 concurrency:
   group: koesivusto
   cancel-in-progress: false
@@ -31,8 +42,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     env:
       PLAYWRIGHT: playwright@1.65.1
+      SITE: ${{ inputs.site }}
     steps:
       - uses: actions/checkout@v7
+
+      - name: Which directory
+        id: directory
+        shell: bash
+        run: |
+          directory="${SITE##*/}"
+          case "$directory" in
+            testaaja | toinen | yla) ;;
+            *) echo "site $SITE is none of testaaja, toinen, yla" >&2; exit 1 ;;
+          esac
+          echo "name=$directory" >> "$GITHUB_OUTPUT"
 
       - name: Check
         run: ./check.sh
@@ -59,12 +82,38 @@ jobs:
           path: shots/
           if-no-files-found: error
 
+      - name: Replace this directory on gh-pages, keep the others
+        shell: bash
+        env:
+          DIRECTORY: ${{ steps.directory.outputs.name }}
+        run: |
+          set -euo pipefail
+          if git fetch --depth 1 origin gh-pages; then
+            git worktree add pages FETCH_HEAD
+          else
+            # The first deploy: a branch of its own history, holding only the pages.
+            git worktree add --orphan -b gh-pages pages
+          fi
+          rm -rf "pages/$DIRECTORY"
+          cp -R site "pages/$DIRECTORY"
+          # The site's own address leads to the upstream; no word of its own.
+          printf '<!doctype html>\n<meta http-equiv="refresh" content="0; url=yla/">\n' > pages/index.html
+          touch pages/.nojekyll
+          cd pages
+          git add -A
+          git -c user.name="Anvil deploy" -c user.email="anvil-deploy@users.noreply.github.com" \
+            commit -q --allow-empty -m "Deploy $GITHUB_SHA to $DIRECTORY"
+          git push -q origin HEAD:refs/heads/gh-pages
+
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: site/
+          path: pages/
       - id: deployment
         uses: actions/deploy-pages@v5
 
-      - name: Verify the koesivusto serves this commit
-        run: python3 -B verify.py "${{ steps.deployment.outputs.page_url }}" "$GITHUB_SHA"
+      - name: Verify the directory serves this commit
+        env:
+          DIRECTORY: ${{ steps.directory.outputs.name }}
+        run: |
+          python3 -B verify.py "${{ steps.deployment.outputs.page_url }}$DIRECTORY/" "$GITHUB_SHA"

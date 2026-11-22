@@ -60,6 +60,18 @@ class Pages(unittest.TestCase):
         self.assertEqual(missing, app.answer("/ei-ole")[2].decode())
 
 
+class Verify(unittest.TestCase):
+    def test_a_directory_of_the_site_is_checked_at_its_own_address(self):
+        for address in (
+            "https://matti.github.io/posse-demo/testaaja/",
+            "https://matti.github.io/posse-demo/testaaja",
+        ):
+            self.assertEqual(
+                verify.url_of(address, "abc"),
+                "https://matti.github.io/posse-demo/testaaja/?v=abc",
+            )
+
+
 class Served(unittest.TestCase):
     def test_a_real_server_answers_on_a_free_port(self):
         running = app.server(0)
