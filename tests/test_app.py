@@ -72,6 +72,25 @@ class Verify(unittest.TestCase):
             )
 
 
+class VerifyWaits(unittest.TestCase):
+    def test_an_earlier_page_or_a_missing_one_is_asked_for_again_until_the_commit_is_served(self):
+        answers = iter([["answered 404"], ["is not commit abc's page"], []])
+        asked = []
+        real = verify.problems_of, verify.ASK_EVERY_SECONDS
+        verify.problems_of = lambda url, commit: asked.append(url) or next(answers)
+        verify.ASK_EVERY_SECONDS = 0
+        try:
+            self.assertEqual(verify.main("https://example.invalid/testaaja/", "abc"), 0)
+        finally:
+            verify.problems_of, verify.ASK_EVERY_SECONDS = real
+        self.assertEqual(len(asked), 3)
+
+    def test_a_site_that_does_not_answer_is_a_problem_not_a_crash(self):
+        problems = verify.problems_of("http://127.0.0.1:1/?v=abc", "abc")
+        self.assertEqual(len(problems), 1)
+        self.assertIn("did not answer", problems[0])
+
+
 class Served(unittest.TestCase):
     def test_a_real_server_answers_on_a_free_port(self):
         running = app.server(0)
@@ -87,7 +106,7 @@ class Served(unittest.TestCase):
             self.assertEqual(missing.exception.code, 404)
             # What the deploy workflow asks after a deploy: this commit's page, or a failure.
             self.assertEqual(verify.main(base, app.version()), 0)
-            self.assertEqual(verify.main(base, "not-" + app.version()), 1)
+            self.assertEqual(verify.main(base, "not-" + app.version(), wait_seconds=0), 1)
         finally:
             running.shutdown()
             running.server_close()
