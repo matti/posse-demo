@@ -12,6 +12,11 @@ SERVICES = [
     ("Perushuolto", "Vaihteiden ja jarrujen säätö, ketjujen puhdistus ja voitelu.", "59 euroa"),
     ("Renkaan vaihto", "Sisärengas tai ulkorengas vaihdetaan odottaessasi.", "25 euroa"),
     ("Sähköpyörän huolto", "Perushuolto ja akun ja moottorin tarkistus.", "89 euroa"),
+    (
+        "Talvihuolto",
+        "Pyörän talvikunnostus, nastarenkaiden vaihto ja ketjun voitelu.",
+        "49 euroa",
+    ),
 ]
 
 HOURS_HEADING = "Aukioloajat"
