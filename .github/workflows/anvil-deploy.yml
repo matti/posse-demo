@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 20
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_again.outputs.page_url }}
     env:
       PLAYWRIGHT: playwright@1.65.1
       SITE: ${{ inputs.site }}
@@ -109,11 +109,18 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: pages/
+      # deploy-pages now and then cannot read the artifact uploaded a moment ago ("No artifacts
+      # named github-pages were found", twice in eight runs on 23 Nov 2026): it is asked once more.
       - id: deployment
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+      - id: deployment_again
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v5
 
       - name: Verify the directory serves this commit
         env:
           DIRECTORY: ${{ steps.directory.outputs.name }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url || steps.deployment_again.outputs.page_url }}
         run: |
-          python3 -B verify.py "${{ steps.deployment.outputs.page_url }}$DIRECTORY/" "$GITHUB_SHA"
+          python3 -B verify.py "$PAGE_URL$DIRECTORY/" "$GITHUB_SHA"
