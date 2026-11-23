@@ -26,10 +26,10 @@ on:
 permissions:
   contents: write
 
-# One deploy at a time: the branch gh-pages and the Pages site are shared by every directory.
-concurrency:
-  group: koesivusto
-  cancel-in-progress: false
+# No concurrency group: GitHub keeps one waiting run per group and cancels the others, so of
+# three deploys started together (a contact's directory, the other's, the upstream) the middle
+# one was cancelled (23 Nov 2026). Runs go side by side; what they share is the branch gh-pages,
+# and the step that pushes it takes the branch anew and tries again when another run was first.
 
 jobs:
   deploy:
@@ -83,22 +83,31 @@ jobs:
           DIRECTORY: ${{ steps.directory.outputs.name }}
         run: |
           set -euo pipefail
-          if git fetch --depth 1 origin gh-pages; then
-            git worktree add pages FETCH_HEAD
-          else
-            # The first deploy: a branch of its own history, holding only the pages.
-            git worktree add --orphan -b gh-pages pages
-          fi
-          rm -rf "pages/$DIRECTORY"
-          cp -R site "pages/$DIRECTORY"
-          # The site's own address leads to the upstream; no word of its own.
-          printf '<!doctype html>\n<meta http-equiv="refresh" content="0; url=yla/">\n' > pages/index.html
-          touch pages/.nojekyll
-          cd pages
-          git add -A
-          git -c user.name="Anvil deploy" -c user.email="anvil-deploy@users.noreply.github.com" \
-            commit -q --allow-empty -m "Deploy $GITHUB_SHA to $DIRECTORY"
-          git push -q origin HEAD:refs/heads/gh-pages
+          # Another run may push between the fetch and the push: then the branch is taken anew
+          # and this directory replaced on it again. Five tries; each is a real conflict lost.
+          for attempt in 1 2 3 4 5; do
+            rm -rf pages && git worktree prune
+            if git fetch --depth 1 origin gh-pages; then
+              git worktree add --detach pages FETCH_HEAD
+            else
+              # The first deploy: a branch of its own history, holding only the pages.
+              git worktree add --orphan -b "gh-pages-$GITHUB_RUN_ID-$attempt" pages
+            fi
+            rm -rf "pages/$DIRECTORY"
+            cp -R site "pages/$DIRECTORY"
+            # The site's own address leads to the upstream; no word of its own.
+            printf '<!doctype html>\n<meta http-equiv="refresh" content="0; url=yla/">\n' > pages/index.html
+            touch pages/.nojekyll
+            git -C pages add -A
+            git -C pages -c user.name="Anvil deploy" -c user.email="anvil-deploy@users.noreply.github.com" \
+              commit -q --allow-empty -m "Deploy $GITHUB_SHA to $DIRECTORY"
+            if git -C pages push -q origin HEAD:refs/heads/gh-pages; then
+              exit 0
+            fi
+            echo "gh-pages moved under this run (try $attempt); taking it anew"
+          done
+          echo "gh-pages could not be pushed in five tries" >&2
+          exit 1
 
       # Pages publishes the branch gh-pages (Settings, Pages, "Deploy from a branch"): the push
       # above is the deploy. Not actions/deploy-pages: it names a deployment by the run's commit,
