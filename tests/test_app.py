@@ -29,14 +29,13 @@ class Pages(unittest.TestCase):
         for day, time in content.HOURS:
             self.assertIn(f"<td>{day}</td><td>{time}</td>", page)
 
-    def test_the_opening_hours_are_9_17_on_weekdays_and_10_14_on_saturdays(self):
+    def test_the_opening_hours_are_9_17_on_weekdays_and_10_16_on_saturdays(self):
         page = app.answer("/")[2].decode()
         self.assertIn("<td>Maanantai-perjantai</td><td>9-17</td>", page)
-        self.assertIn("<td>Lauantai</td><td>10-14</td>", page)
+        self.assertIn("<td>Lauantai</td><td>10-16</td>", page)
         self.assertIn("<td>Sunnuntai</td><td>suljettu</td>", page)
         self.assertNotIn("10-18", page)
         self.assertNotIn("10-15", page)
-        self.assertNotIn("10-16", page)
 
     def test_the_winter_service_is_listed_with_its_price_and_three_tasks(self):
         page = app.answer("/")[2].decode()
