@@ -8,10 +8,12 @@ root, not another directory. The commit is asked for in the address's query, so 
 cache answers with the page just deployed, not an earlier copy. Exit status 0 when it does, 1
 when not.
 
-GitHub Pages reports a deployment done some seconds before every edge serves it: until then
-the directory answers with the earlier page, or 404 when it is new. So the page is asked for
-again until it is this commit's or the time is up (WAIT_SECONDS, three minutes); what is
-reported in the end is the last answer.
+GitHub Pages reports a deployment done before its edge serves it, and the edge may keep the
+earlier copy of a page for its ten minutes whatever the query says (seen on 23 Nov 2026: a
+directory deployed at 08:34 UTC still answered with the earlier page at 08:37, and with the
+new one by 08:50). Until then the directory answers with the earlier page, or 404 when it is
+new. So the page is asked for again until it is this commit's or the time is up (WAIT_SECONDS,
+fifteen minutes); what is reported in the end is the last answer.
 """
 
 import sys
@@ -19,8 +21,8 @@ import time
 import urllib.error
 import urllib.request
 
-WAIT_SECONDS = 180
-ASK_EVERY_SECONDS = 3
+WAIT_SECONDS = 900
+ASK_EVERY_SECONDS = 5
 
 import content
 
