@@ -29,6 +29,15 @@ class Pages(unittest.TestCase):
         for day, time in content.HOURS:
             self.assertIn(f"<td>{day}</td><td>{time}</td>", page)
 
+    def test_the_winter_service_is_listed_with_its_price_and_three_tasks(self):
+        page = app.answer("/")[2].decode()
+        self.assertIn("Talvihuolto", page)
+        self.assertIn("49 euroa", page)
+        for task in ("talvikunnostus", "nastarenkaiden vaihto", "ketjun voitelu"):
+            self.assertIn(task, page)
+        for price in ("59 euroa", "25 euroa", "89 euroa"):
+            self.assertIn(price, page)
+
     def test_the_phone_number_can_be_called_from_the_page(self):
         page = app.answer("/")[2].decode()
         self.assertIn('href="tel:+358401234567"', page)
