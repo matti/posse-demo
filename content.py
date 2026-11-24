@@ -32,5 +32,5 @@ PHONE = "+358 40 123 4567"
 EMAIL = "korjaamo@posse-demo.example"
 
 NOT_FOUND_TITLE = "Sivua ei löydy"
-NOT_FOUND_LEAD = "Etsimääsi sivua ei ole. Palaa etusivulle."
+NOT_FOUND_LEAD = "Etsimääsi sivua ei löytynyt. Palaa etusivulle."
 BACK_HOME = "Etusivulle"
