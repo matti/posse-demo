@@ -68,6 +68,7 @@ class Pages(unittest.TestCase):
         status, _, body = app.answer("/ei-ole")
         self.assertEqual(status, 404)
         self.assertIn(content.NOT_FOUND_TITLE, body.decode())
+        self.assertIn("Etsimääsi sivua ei löytynyt. Palaa etusivulle.", body.decode())
 
     def test_the_static_copy_is_the_same_as_the_served_page(self):
         with tempfile.TemporaryDirectory() as target:
