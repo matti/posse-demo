@@ -22,7 +22,7 @@ SERVICES = [
 HOURS_HEADING = "Aukioloajat"
 HOURS = [
     ("Maanantai-perjantai", "9-17"),
-    ("Lauantai", "10-16"),
+    ("Lauantai", "10-14"),
     ("Sunnuntai", "suljettu"),
 ]
 
