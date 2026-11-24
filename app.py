@@ -90,7 +90,7 @@ def home() -> str:
 <section id="yhteystiedot">
 <h2>{e(c.CONTACT_HEADING)}</h2>
 <p>{e(c.ADDRESS)}<br>
-<a href="tel:{e(c.PHONE.replace(" ", ""), quote=True)}">{e(c.PHONE)}</a><br>
+<a href="tel:{e(c.PHONE_TEL, quote=True)}">{e(c.PHONE)}</a><br>
 <a href="mailto:{e(c.EMAIL, quote=True)}">{e(c.EMAIL)}</a></p>
 </section>
 </main>"""
