@@ -19,6 +19,13 @@ SERVICES = [
     ),
 ]
 
+STUDENT_PERCENT = 10
+STUDENT_LABEL = "Opiskelijoille"
+STUDENT_NOTE = (
+    f"Opiskelijoille {STUDENT_PERCENT} prosentin alennus kaikista palveluista. "
+    "Näytä opiskelijakortti korjaamolla."
+)
+
 HOURS_HEADING = "Aukioloajat"
 HOURS = [
     ("Maanantai-perjantai", "9-17"),

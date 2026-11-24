@@ -47,6 +47,27 @@ class Pages(unittest.TestCase):
         for price in ("59 euroa", "25 euroa", "89 euroa"):
             self.assertIn(price, page)
 
+    def test_every_service_shows_its_student_price_and_the_condition(self):
+        page = app.answer("/")[2].decode()
+        for price, student in (("59 euroa", "53,10 euroa"), ("25 euroa", "22,50 euroa"),
+                               ("89 euroa", "80,10 euroa"), ("49 euroa", "44,10 euroa")):
+            self.assertIn(f'{price}<br><span class="student">Opiskelijoille {student}</span>', page)
+        self.assertIn("Näytä opiskelijakortti korjaamolla.", page)
+
+    def test_the_note_percent_comes_from_the_same_constant_as_the_prices(self):
+        source = (pathlib.Path(content.__file__)).read_text(encoding="utf-8")
+        self.assertNotIn("10 prosentin", source)
+        self.assertIn(f"{content.STUDENT_PERCENT} prosentin", content.STUDENT_NOTE)
+
+    def test_a_service_added_later_gets_a_student_price(self):
+        original = content.SERVICES
+        content.SERVICES = original + [("Uusi", "x", "100 euroa")]
+        try:
+            page = app.home()
+        finally:
+            content.SERVICES = original
+        self.assertIn("Opiskelijoille 90,00 euroa", page)
+
     def test_the_phone_number_can_be_called_from_the_page(self):
         page = app.answer("/")[2].decode()
         self.assertIn('href="tel:+358501112222"', page)

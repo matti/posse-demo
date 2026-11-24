@@ -52,10 +52,19 @@ def _shell(title: str, body: str) -> str:
 """
 
 
+def student_price(price: str) -> str:
+    """The listed price ("59 euroa") less the student discount, in euros with a decimal comma."""
+    amount, unit = price.split(" ", 1)
+    cents = int(amount) * 100 * (100 - c.STUDENT_PERCENT)
+    cents = (cents + 50) // 100
+    return f"{cents // 100},{cents % 100:02d} {unit}"
+
+
 def home() -> str:
     e = html.escape
     services = "\n".join(
-        f'<tr><td><strong>{e(name)}</strong><br>{e(what)}</td><td class="price">{e(price)}</td></tr>'
+        f'<tr><td><strong>{e(name)}</strong><br>{e(what)}</td><td class="price">{e(price)}'
+        f'<br><span class="student">{e(c.STUDENT_LABEL)} {e(student_price(price))}</span></td></tr>'
         for name, what, price in c.SERVICES
     )
     hours = "\n".join(f"<tr><td>{e(day)}</td><td>{e(time)}</td></tr>" for day, time in c.HOURS)
@@ -70,6 +79,7 @@ def home() -> str:
 <table>
 {services}
 </table>
+<p class="student-note">{e(c.STUDENT_NOTE)}</p>
 </section>
 <section id="aukioloajat">
 <h2>{e(c.HOURS_HEADING)}</h2>
