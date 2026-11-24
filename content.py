@@ -21,8 +21,8 @@ SERVICES = [
 
 HOURS_HEADING = "Aukioloajat"
 HOURS = [
-    ("Maanantai-perjantai", "10-18"),
-    ("Lauantai", "10-15"),
+    ("Maanantai-perjantai", "9-17"),
+    ("Lauantai", "10-14"),
     ("Sunnuntai", "suljettu"),
 ]
 
@@ -33,5 +33,5 @@ PHONE_TEL = "+358407654321"
 EMAIL = "korjaamo@posse-demo.example"
 
 NOT_FOUND_TITLE = "Sivua ei löydy"
-NOT_FOUND_LEAD = "Etsimääsi sivua ei ole. Palaa etusivulle."
+NOT_FOUND_LEAD = "Etsimääsi sivua ei löytynyt. Palaa etusivulle."
 BACK_HOME = "Etusivulle"
