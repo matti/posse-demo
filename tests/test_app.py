@@ -41,6 +41,9 @@ class Pages(unittest.TestCase):
     def test_the_phone_number_can_be_called_from_the_page(self):
         page = app.answer("/")[2].decode()
         self.assertIn('href="tel:+358501112222"', page)
+        self.assertIn(">+358 50 111 2222</a>", page)
+        self.assertNotIn("+358 40 123 4567", page)
+        self.assertNotIn("358401234567", page)
 
     def test_text_is_escaped(self):
         original = content.TAGLINE
