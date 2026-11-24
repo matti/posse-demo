@@ -35,8 +35,7 @@ HOURS = [
 
 CONTACT_HEADING = "Yhteystiedot"
 ADDRESS = "Fleminginkatu 1, 00530 Helsinki"
-PHONE = "040 765 4321"
-PHONE_TEL = "+358407654321"
+PHONE = "+358 50 111 2222"
 EMAIL = "korjaamo@posse-demo.example"
 
 NOT_FOUND_TITLE = "Sivua ei löydy"
