@@ -22,7 +22,7 @@ SERVICES = [
 STUDENT_PERCENT = 10
 STUDENT_LABEL = "Opiskelijoille"
 STUDENT_NOTE = (
-    "Opiskelijoille 10 prosentin alennus kaikista palveluista. "
+    f"Opiskelijoille {STUDENT_PERCENT} prosentin alennus kaikista palveluista. "
     "Näytä opiskelijakortti korjaamolla."
 )
 
