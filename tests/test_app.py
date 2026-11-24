@@ -68,6 +68,19 @@ class Pages(unittest.TestCase):
             content.SERVICES = original
         self.assertIn("Opiskelijoille 90,00 euroa", page)
 
+    def test_the_chain_service_is_listed_after_tire_change_in_page_and_build(self):
+        page = app.answer("/")[2].decode()
+        self.assertIn("Ketjun vaihto", page)
+        self.assertIn("Uusi ketju ja säätö.", page)
+        self.assertIn('35 euroa<br><span class="student">Opiskelijoille 31,50 euroa</span>', page)
+        self.assertLess(page.index("Renkaan vaihto"), page.index("Ketjun vaihto"))
+        self.assertLess(page.index("Ketjun vaihto"), page.index("Sähköpyörän huolto"))
+        with tempfile.TemporaryDirectory() as target:
+            app.build(pathlib.Path(target))
+            built = pathlib.Path(target, "index.html").read_text(encoding="utf-8")
+        self.assertIn("Ketjun vaihto", built)
+        self.assertIn("35 euroa", built)
+
     def test_the_phone_number_can_be_called_from_the_page(self):
         page = app.answer("/")[2].decode()
         self.assertIn('href="tel:+358501112222"', page)

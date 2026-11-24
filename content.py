@@ -11,6 +11,7 @@ SERVICES_HEADING = "Palvelut"
 SERVICES = [
     ("Perushuolto", "Vaihteiden ja jarrujen säätö, ketjujen puhdistus ja voitelu.", "59 euroa"),
     ("Renkaan vaihto", "Sisärengas tai ulkorengas vaihdetaan odottaessasi.", "25 euroa"),
+    ("Ketjun vaihto", "Uusi ketju ja säätö.", "35 euroa"),
     ("Sähköpyörän huolto", "Perushuolto ja akun ja moottorin tarkistus.", "89 euroa"),
     (
         "Talvihuolto",
